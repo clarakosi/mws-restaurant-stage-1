@@ -22,7 +22,7 @@ initMap = () => {
         scrollWheelZoom: false
       });
       L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.jpg70?access_token={mapboxToken}', {
-        mapboxToken: '<your MAPBOX API KEY HERE>',
+        mapboxToken: 'pk.eyJ1IjoiY2FuZHJld3dhbmkiLCJhIjoiY2pqb2tqY2JpNzdrejN3cjV3Nnc5N3FmMSJ9.h0-sO5IUmRFRmcRa0mkLnA',
         maxZoom: 18,
         attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
           '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
@@ -151,18 +151,23 @@ createReviewHTML = (review) => {
   const name = document.createElement('p');
   name.innerHTML = review.name;
   li.appendChild(name);
+  li.tabIndex = 0;
+  name.tabIndex = 0;
 
   const date = document.createElement('p');
   date.innerHTML = review.date;
   li.appendChild(date);
+  date.tabIndex = 0;
 
   const rating = document.createElement('p');
   rating.innerHTML = `Rating: ${review.rating}`;
   li.appendChild(rating);
+  rating.tabIndex = 0;
 
   const comments = document.createElement('p');
   comments.innerHTML = review.comments;
   li.appendChild(comments);
+  comments.tabIndex = 0;
 
   return li;
 }
