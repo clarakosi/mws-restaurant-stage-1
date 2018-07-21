@@ -129,6 +129,7 @@ fillReviewsHTML = (reviews = self.restaurant.reviews) => {
   const title = document.createElement('h2');
   title.innerHTML = 'Reviews';
   container.appendChild(title);
+  title.tabIndex = 0;
 
   if (!reviews) {
     const noReviews = document.createElement('p');

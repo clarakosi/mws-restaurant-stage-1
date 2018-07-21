@@ -168,6 +168,7 @@ createRestaurantHTML = (restaurant) => {
   name.innerHTML = restaurant.name;
   li.append(name);
   name.tabIndex = 0;
+  image.alt = `${restaurant.name} image`;
 
   const neighborhood = document.createElement('p');
   neighborhood.innerHTML = restaurant.neighborhood;
