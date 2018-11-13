@@ -217,7 +217,7 @@ nav h1 a {
   width: 100%;
 }
 .inside #footer {
-  bottom: 0;
+  /*bottom: 0;*/
   position: absolute;
   width: -webkit-fill-available;
   /* width: 100%; */

@@ -28,6 +28,7 @@ class DBPromise {
              const db = event.target.result;
              const objectStore = db.createObjectStore("reviews", {keyPath: 'id'});
              objectStore.createIndex("restaurant_id", "restaurant_id");
+             objectStore.autoIncrement;
 
              objectStore.transaction.oncomplete = function (event) {
                  const reviewsObjectStore = db.transaction("reviews", "readwrite").objectStore("reviews");
@@ -296,6 +297,24 @@ class DBHelper {
         };
         xhr.send();
         
+    }
+    
+    static addReview(info) {
+        fetch(`${DBHelper.DATABASE_URL}/reviews`, {
+            method: "Post",
+            body: JSON.stringify(info)
+        })
+            .then(results => {
+                if(!results) console.error("There was an issue adding the information to the server.")
+                return results.json();
+            }).then(newReview => {
+                DBPromise.addReviews([newReview]);
+                const reviews =document.getElementById('reviews-list');
+                reviews.appendChild(createReviewHTML(info));
+            })
+            .catch(error => {
+                console.log(error);
+            })
     }
 
     /**

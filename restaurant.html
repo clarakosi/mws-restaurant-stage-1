@@ -56,6 +56,27 @@
       <ul id="reviews-list" tabindex="0"></ul>
     </section>
     <!-- End reviews -->
+    <!--Beginning of form-->
+    <form id="form-container" tabindex="0">
+      Name: <br>
+      <input type="text" id="name" aria-label="name" required>
+      <br>
+      Rating: <br>
+      <select id="rating">
+        <option value="-1"></option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+      </select>
+      <br>
+      Comments: <br>
+      <textarea aria-label="comments" rows="5" id="comments"></textarea>
+      <br>
+      <button aria-label="Submit Review">Submit</button>
+    </form>
+    <!--End of form-->
   </main>
   <!-- End main -->
 
