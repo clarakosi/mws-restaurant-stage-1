@@ -1,7 +1,7 @@
-const DBPromise = {
-    addRestaurants(restaurants) {
-        const request = indexedDB.open('mws-restaurants', 1);
-        return request.onupgradeneeded = function (event) {
+class DBPromise {
+    static addRestaurants(restaurants, favoriting = false) {
+        const request = indexedDB.open('mws-restaurants', 2);
+        request.onupgradeneeded = function (event) {
             const db = event.target.result;
             const objectStore = db.createObjectStore("restaurants", {keyPath: 'id'});
 
@@ -11,13 +11,64 @@ const DBPromise = {
                     restaurantObjectStore.add(restaurant);
                 })
             }
+        };
+        
+        if(favoriting) {
+            request.onsuccess = function (event) {
+                const db = event.target.result;
+                const objectStore = db.transaction("restaurants", "readwrite").objectStore("restaurants");
+                return objectStore.put(restaurants);
+            }
         }
-    },
+    }
 
-    getRestaurant(id) {
+    static addReviews(reviews) {
+        const request = indexedDB.open('mws-reviews', 2);
+         request.onupgradeneeded = function (event) {
+             const db = event.target.result;
+             const objectStore = db.createObjectStore("reviews", {keyPath: 'id'});
+             objectStore.createIndex("restaurant_id", "restaurant_id");
+
+             objectStore.transaction.oncomplete = function (event) {
+                 const reviewsObjectStore = db.transaction("reviews", "readwrite").objectStore("reviews");
+                 reviews.forEach(review => {
+                     reviewsObjectStore.add(review);
+                 })
+             }
+         };
+        request.onsuccess = function(event) {
+            const db = event.target.result;
+            const objectStore = db.transaction("reviews", "readwrite").objectStore("reviews");
+            
+            return reviews.map(review => {
+                objectStore.get(review.id).onsuccess = event => {
+                   const dbReview = event.target.result;
+                   if(!dbReview || new Date(review.updateAt) > new Date(dbReview.updateAt)) {
+                       return objectStore.put(review);
+                   }
+                }
+            })
+        }
+    }
+
+    static getReviews(id) {
         return new Promise(resolve => {
 
-            const request = indexedDB.open('mws-restaurants', 1);
+            const request = indexedDB.open('mws-reviews', 2);
+            return request.onsuccess = function (event) {
+                const db = event.target.result;
+                const objectStore = db.transaction("reviews").objectStore("reviews").index("restaurant_id");
+
+                objectStore.getAll(id).onsuccess = event => {
+                    return resolve(event.target.result);
+                };
+            }
+        })
+    }
+
+   static getRestaurant(id) {
+        return new Promise(resolve => {
+            const request = indexedDB.open('mws-restaurants', 2);
             return request.onsuccess = function (event) {
                 const db = event.target.result;
                 const objectStore = db.transaction("restaurants").objectStore("restaurants");
@@ -27,16 +78,14 @@ const DBPromise = {
                         return resolve(event.target.result);
                     };
                 } else {
-                    // return new Promise(resolve => {
                     objectStore.getAll().onsuccess = event => {
                         return resolve(event.target.result);
                     }
-                    // })
                 }
             }
         })
-    },
-};
+    }
+}
 
 
 /**
@@ -50,7 +99,7 @@ class DBHelper {
      */
     static get DATABASE_URL() {
         const port = 1337; // Change this to your server port
-        return `http://localhost:${port}/restaurants`;
+        return `http://localhost:${port}`;
     }
 
     /**
@@ -58,7 +107,8 @@ class DBHelper {
      */
     static fetchRestaurants(callback) {
         let xhr = new XMLHttpRequest();
-        xhr.open('GET', DBHelper.DATABASE_URL);
+        xhr.open('GET', `${DBHelper.DATABASE_URL}/restaurants`);
+        
         xhr.onload = () => {
             if (xhr.status === 200) { // Got a success response from server!
                 const restaurants = JSON.parse(xhr.responseText);
@@ -104,6 +154,35 @@ class DBHelper {
                 }
             }
         });
+    }
+    
+    static fetchRestaurantReviewsByID(id, callback) {
+        let xhr = new XMLHttpRequest();
+        xhr.open('GET', `${DBHelper.DATABASE_URL}/reviews/?restaurant_id=${id}`);
+        
+        xhr.onload = () => {
+            if (xhr.status === 200) { // Got a success response from server!
+                const reviews = JSON.parse(xhr.responseText);
+                if (reviews.length > 0) DBPromise.addReviews(reviews);
+                callback(null, reviews);
+            } else { // Oops!. Got an error from server.
+                DBPromise.getReviews(id).then(restaurantReviews => {
+                    callback(null, restaurantReviews)
+                }).catch(() => {
+                    const error = (`Request failed. Returned status of ${xhr.status}`);
+                    callback(error, null);
+                })
+            }
+        };
+        xhr.onerror = () => {
+            DBPromise.getReviews(id).then(restaurantReviews => {
+                callback(null, restaurantReviews)
+            }).catch(() => {
+                const error = (`Request failed. No reviews in IDB. Returned status of ${xhr.status}`);
+                callback(error, null);
+            })
+        };
+        xhr.send();
     }
 
     /**
@@ -193,6 +272,30 @@ class DBHelper {
                 callback(null, uniqueCuisines);
             }
         });
+    }
+    
+    static updateRestaurant() {
+        let xhr = new XMLHttpRequest();
+        let favorite = this.getAttribute("aria-pressed") == "true";
+        favorite = !favorite;
+        xhr.open('PUT', `${DBHelper.DATABASE_URL}/restaurants/${this.dataset.id}/?is_favorite=${favorite}`);
+
+        xhr.onload = () => {
+            if (xhr.status === 200) { // Got a success response from server!
+                const restaurant = JSON.parse(xhr.responseText);
+                DBPromise.addRestaurants(restaurant, true);
+                this.setAttribute('aria-pressed', favorite);
+            } else { // Oops!. Got an error from server.
+                    const error = (`Request failed. Returned status of ${xhr.status}`);
+                    callback(error, null);
+            }
+        };
+        xhr.onerror = () => {
+                const error = (`Request failed. Returned status of ${xhr.status}`);
+                callback(error, null);
+        };
+        xhr.send();
+        
     }
 
     /**

@@ -169,6 +169,17 @@ createRestaurantHTML = (restaurant) => {
     li.append(name);
     name.tabIndex = 0;
     image.alt = `image of ${restaurant.name} restaurant`;
+    
+    const favorite = document.createElement('div');
+    favorite.className = "fav-button";
+    favorite.dataset.id = restaurant.id;
+    favorite.setAttribute('aria-label', `Mark ${restaurant.name} as one of your favorite restaurants.`);
+    favorite.setAttribute('aria-pressed', restaurant.is_favorite);
+    favorite.onclick = DBHelper.updateRestaurant;
+    const favButton = document.createElement("i");
+    favButton.classList.add("fas", "fa-heart", "fa-2x");
+    favorite.appendChild(favButton);
+    li.append(favorite);
 
     const neighborhood = document.createElement('p');
     neighborhood.innerHTML = restaurant.neighborhood;

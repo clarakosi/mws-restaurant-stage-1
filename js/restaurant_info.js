@@ -83,6 +83,13 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
     const name = document.getElementById('restaurant-name');
     name.innerHTML = restaurant.name;
 
+    const favorite = document.getElementById('favorite-restaurant');
+    favorite.className = "fav-button";
+    favorite.dataset.id = restaurant.id;
+    favorite.setAttribute('aria-label', `Mark ${restaurant.name} as one of your favorite restaurants.`);
+    favorite.setAttribute('aria-pressed', restaurant.is_favorite);
+    favorite.onclick = DBHelper.updateRestaurant;
+
     const address = document.getElementById('restaurant-address');
     address.innerHTML = restaurant.address;
 
@@ -97,8 +104,17 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
     if (restaurant.operating_hours) {
         fillRestaurantHoursHTML();
     }
+    
     // fill reviews
-    fillReviewsHTML();
+    DBHelper.fetchRestaurantReviewsByID(restaurant.id, (error, reviews) => {
+        if(!reviews) {
+            console.error(error);
+            return;
+        } else {
+            self.restaurant.reviews = reviews;
+            return fillReviewsHTML()
+        }
+    })
 };
 
 /**
@@ -156,7 +172,7 @@ createReviewHTML = (review) => {
     name.tabIndex = 0;
 
     const date = document.createElement('p');
-    date.innerHTML = review.date;
+    date.innerHTML = new Date(review.createdAt).toLocaleDateString();
     li.appendChild(date);
     date.tabIndex = 0;
 
