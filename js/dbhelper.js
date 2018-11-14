@@ -300,21 +300,8 @@ class DBHelper {
     }
     
     static addReview(info) {
-        fetch(`${DBHelper.DATABASE_URL}/reviews`, {
-            method: "Post",
-            body: JSON.stringify(info)
-        })
-            .then(results => {
-                if(!results) console.error("There was an issue adding the information to the server.")
-                return results.json();
-            }).then(newReview => {
-                DBPromise.addReviews([newReview]);
-                const reviews =document.getElementById('reviews-list');
-                reviews.appendChild(createReviewHTML(info));
-            })
-            .catch(error => {
-                console.log(error);
-            })
+        const reviews =document.getElementById('reviews-list');
+        reviews.appendChild(createReviewHTML(info));
     }
 
     /**

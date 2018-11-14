@@ -382,3 +382,8 @@ nav h1 a {
 #restaurant-hours td {
   color: #666;
 }
+
+#form-container {
+  padding-left: 20px;
+  padding-bottom: 10px;
+}

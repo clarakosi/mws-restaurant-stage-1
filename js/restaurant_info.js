@@ -221,11 +221,21 @@ getFormInfo = () => {
     return info;
 };
 
+clearForm = () => {
+    let name = document.getElementById('name');
+    name.value = "";
 
+    let rating = document.getElementById('rating');
+    rating.value = "-1";
+    
+    let comments = document.getElementById('comments');
+    comments.value.length = 0;
+}
 addNewReview = (event) => {
     event.preventDefault();
     const info = getFormInfo();
     DBHelper.addReview(info)
+    clearForm();
 };
 /**
  * Add restaurant name to the breadcrumb navigation menu
